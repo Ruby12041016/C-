@@ -62,15 +62,16 @@ int main() {
     cout << "=====BankAccount=====" << endl;
     BankAccount ba1("Tom", 666.66);
     ba1.show();
-    cout << "存入5555.555：" << endl;
+    cout << "存入55.555：" << endl;
     ba1.deposit(55.555);
     ba1.show();
     ba1.withdraw(99.999);
-    cout << "取出9999.999：" << endl;
+    cout << "取出99.999：" << endl;
     ba1.show();
     cout << "取出99999999.999：" << endl;
     ba1.withdraw(99999999.999);
     ba1.show();
     
+
     return 0;
 }
