@@ -36,31 +36,31 @@ void capture_basics() {
     int y = 20;
     
     // 1. 什么都不捕获 []
-    auto func1 =  {
+    auto func1 = []() {  // ← 这里应该是 []
         std::cout << "独立lambda" << std::endl;
     };
     
     // 2. 捕获所有外部变量（值捕获）[=]
-    auto func2 =  {
+    auto func2 = [=]() {  // ← 这里应该是 [=]
         std::cout << "x = " << x << ", y = " << y << std::endl;
         // 注意：这里不能修改x,y
     };
     
     // 3. 捕获所有外部变量（引用捕获）[&]
-    auto func3 =  {
+    auto func3 = [&]() {  // ← 这里应该是 [&]
         x = 100;  // 可以修改外部变量
         std::cout << "修改后的x = " << x << std::endl;
     };
     
     // 4. 混合捕获 [x, &y]
-    auto func4 =  {
+    auto func4 = [x, &y]() {  // ← 这里应该是 [x, &y]
         // x是值捕获（只读），y是引用捕获（可读写）
         y = 200;
         std::cout << "x=" << x << ", y=" << y << std::endl;
     };
     
     // 初学者建议：明确指定要捕获的变量，避免[=]或[&]
-    auto safe_func =  {
+    auto safe_func = [x]() {  // ← 这里应该是 [x]
         std::cout << "安全：只捕获了x" << std::endl;
     };
 }
@@ -69,35 +69,40 @@ void capture_basics() {
 ### 3. **Lambda在STL中的实际应用**
 
 ```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>  // sort, find_if, count_if, transform, for_each
+#include <iterator>   // back_inserter
+
 void lambda_with_stl() {
     std::vector<int> numbers = {5, 2, 8, 1, 9, 3};
     
     // 1. 排序（从大到小）
     std::sort(numbers.begin(), numbers.end(), 
-              int a, int b { return a > b; });
-    
+              [](int a, int b) { return a > b; }); 
+
     // 2. 查找第一个大于5的数
     auto it = std::find_if(numbers.begin(), numbers.end(),
-        int n { return n > 5; });
+        [](int n) { return n > 5; }); 
     if (it != numbers.end()) {
         std::cout << "找到: " << *it << std::endl;
     }
     
     // 3. 计数偶数
     int even_count = std::count_if(numbers.begin(), numbers.end(),
-        int n { return n % 2 == 0; });
+        [](int n) { return n % 2 == 0; });  
     std::cout << "偶数个数: " << even_count << std::endl;
     
     // 4. 每个元素乘2
     std::vector<int> doubled;
     std::transform(numbers.begin(), numbers.end(), 
                    std::back_inserter(doubled),
-                   int n { return n * 2; });
-    
+                   [](int n) { return n * 2; }); 
+
     // 5. 打印所有元素
     std::cout << "所有元素: ";
     std::for_each(numbers.begin(), numbers.end(),
-        int n { std::cout << n << " "; });
+        [](int n) { std::cout << n << " "; });  
     std::cout << std::endl;
 }
 ```
@@ -187,77 +192,9 @@ void when_use_functor() {
     std::cout << "5到15之间: " << count3 << std::endl;
 }
 ```
-## 三、错误
-
-### **Lambda常见错误**
-
-```cpp
-void common_mistakes_lambdas() {
-    // 错误1：捕获悬挂引用
-    std::function<int()> func;
-    {
-        int x = 10;
-        func =  { return x; };  // 危险！x离开作用域就无效了
-    }
-    // int result = func();  // 未定义行为！
-    
-    // 正确做法：值捕获
-    std::function<int()> func_safe;
-    {
-        int x = 10;
-        func_safe =  { return x; };  // 安全：复制值
-    }
-    int result_safe = func_safe();  // 安全：10
-    
-    // 错误2：忘记mutable（想修改值捕获的变量）
-    int y = 5;
-    auto lambda =  {
-        // y++;  // 错误！不能修改值捕获的变量
-        return y;
-    };
-    
-    // 正确做法：使用mutable
-    auto lambda_mutable =  mutable {
-        y++;  // 可以修改，但只修改副本
-        return y;
-    };
-    
-    // 错误3：性能问题（过度捕获）
-    int a = 1, b = 2, c = 3, d = 4, e = 5;
-    // auto bad =  { return a + b; };  // 捕获了不需要的变量
-    auto good =  { return a + b; };  // 只捕获需要的变量
-    
-    // 错误4：lambda与auto类型推导
-    auto lambda1 =  { return 42; };
-    // std::function<void()> func = lambda1;  // 需要匹配返回类型
-    std::function<int()> func1 = lambda1;  // 正确
-}
-```
-
-
-### **每日练习任务**
-```cpp
-// 每日一练模板
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <algorithm>
-
-void daily_practice() {
-    // 1. 创建一个Student类的智能指针
-    // 2. 用lambda对一组数字排序
-    // 3. 用lambda查找特定条件的元素
-    // 4. 用shared_ptr模拟对象共享
-}
-```
 
 ### **口诀总结**
 ```
-智能指针三板斧：
-1. 要创建，make_xxx
-2. 独享用unique，共享用shared
-3. 循环引用，weak_ptr解
-
 Lambda三步走：
 1. 写小括号：参数
 2. 写大括号：函数体
