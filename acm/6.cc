@@ -15,8 +15,7 @@ int main() {
             g = __gcd(g, x);  // 更新最大公约数
             sum += x;         // 累加元素到sum
         }
-        g = __gcd(g,
-                  2);  // 与2取最大公约数，确保g是偶数或保持原g（如果原g是奇数）
+        g = __gcd(g, 2);  // 与2取最大公约数，确保g是偶数或保持原g（如果原g是奇数）
         int ans = sum / g + 1;  
         cout << ans << endl;   
     }
